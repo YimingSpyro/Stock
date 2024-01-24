@@ -1,0 +1,12 @@
+[ok]
+1. get all data 
+2. filter data (foreach), counter++ 
+[ok]
+3. check condition (if)
+4. if match, append resultTable
+5. if match, record counter
+
+6. filter results (foreach)
+7. SP500Data[counter+1,7,14,etc].Change, check Condition
+8. if match, record counter, add change, add percentage
+9. display data, %positive, avg gain/lose

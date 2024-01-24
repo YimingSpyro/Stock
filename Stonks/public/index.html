@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Stonks</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://kit.fontawesome.com/5e61a4e927.js" crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" type="text/css" href="/index.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+
+
+    <script>
+        const baseUrl = "http://localhost:8081";
+
+        // Get Database Length
+
+        // SQL Query Search
+        function dataQuery() {
+            // Reset dataTable
+            $("#dataTable").empty();
+            $("#statsTable").empty();
+            event.preventDefault();
+
+            // Get Data
+            const sqlQuery = $("#sqlQuery").val();
+            const cond1 = $("#inlineFormCustomSelect1").val();
+            const cond2 = $("#inlineFormCustomSelect2").val();
+            const cond3 = $("#inlineFormCustomSelect3").val();
+
+            // Assemble Condition
+
+            // Assemble Request Body
+            const requestBody = {
+                "sqlCmd": sqlQuery
+            };
+
+            /* Get Listings */
+            axios.get(`${baseUrl}/SP500/`, {
+                    params: {
+                        sqlCmd: sqlQuery
+                    }
+                })
+                .then((response) => {
+
+                    // Loop Variables
+                    var SP500Data = response.data;
+                    var counter = 0;
+                    var selectedItem = []
+                    var selectedItemCounter = 0
+
+                    // Loop for dataTable
+                    SP500Data.forEach((item) => {
+
+                        const date = item.Date;
+                        const close = item.Close;
+                        const open = item.Open;
+                        const high = item.High;
+                        const low = item.High;
+                        const change = item.Change;
+                        const percentage = item.Percentage;
+
+                        // Check Condition
+                        switch (cond1) {
+                            case "":
+                                var condition = false;
+                                break;
+                            case "> 1.5":
+                                var condition = percentage > 1.5;
+                                break;
+                            case "> 1":
+                                var condition = percentage > 1;
+                                break;
+                            case "> 0.5":
+                                var condition = percentage > 0.5;
+                                break;
+                            case "> 0":
+                                var condition = percentage > 0;
+                                break;
+                            case "< 0":
+                                var condition = percentage < 0;
+                                break;
+                            case "< -0.5":
+                                var condition = percentage < -0.5;
+                                break;
+                            case "< -1":
+                                var condition = percentage < -1;
+                                break;
+                            case "< -1.5":
+                                var condition = percentage < -1.5;
+                                break;
+                        }
+
+                        // Check Condition
+                        if (condition) {
+                            // Record Item
+                            selectedItem.push(counter);
+
+                            // Html stuff for dataTable
+                            const SP500Html = `
+                                <tr>
+                                    <td>${date}</td>
+                                    <td>${close}</td>
+                                    <td>${open}</td>
+                                    <td>${high}</td>
+                                    <td>${low}</td>
+                                    <td>${change}</td>
+                                    <td>${percentage}</td>
+                                </tr>`;
+                            /* Create display */
+                            $("#dataTable").append(SP500Html);
+                        }
+
+                        counter++;
+                    });
+
+                    // statsTable Var
+                    const occurences = selectedItem.length;
+                    var day1 = 0;
+                    var week1 = 0;
+                    var week2 = 0;
+                    var week3 = 0;
+                    var month1 = 0;
+                    var month3 = 0;
+                    var month6 = 0;
+                    var year1 = 0;
+                    var day1change = 0;
+                    var week1change = 0;
+                    var week2change = 0;
+                    var week3change = 0;
+                    var month1change = 0;
+                    var month3change = 0;
+                    var month6change = 0;
+                    var year1change = 0;
+
+                    // Recording Occurences
+                    selectedItem.forEach((item) => {
+
+                        if ((item - 1) >= 0 && SP500Data[item - 1].Close > SP500Data[item].Close) {
+                            day1++;
+                            day1change += parseFloat(parseFloat(SP500Data[item - 1].Close) / parseFloat(SP500Data[item].Close)) - 1;
+                        }
+                        if ((item - 7) >= 0 && SP500Data[item - 7].Close > SP500Data[item].Close) {
+                            week1++;
+                            week1change += parseFloat(parseFloat(SP500Data[item - 7].Close) / parseFloat(SP500Data[item].Close)) - 1;
+                        };
+                        if ((item - 14) >= 0 && SP500Data[item - 14].Close > SP500Data[item].Close) {
+                            week2++;
+                            week2change += parseFloat(parseFloat(SP500Data[item - 14].Close) / parseFloat(SP500Data[item].Close)) - 1;
+                        };
+                        if ((item - 21) >= 0 && SP500Data[item - 21].Close > SP500Data[item].Close) {
+                            week3++;
+                            week3change += parseFloat(parseFloat(SP500Data[item - 21].Close) / parseFloat(SP500Data[item].Close)) - 1;
+                        };
+                        if ((item - 28) >= 0 && SP500Data[item - 28].Close > SP500Data[item].Close) {
+                            month1++;
+                            month1change += parseFloat(parseFloat(SP500Data[item - 28].Close) / parseFloat(SP500Data[item].Close)) - 1;
+                        };
+                        if ((item - 84) >= 0 && SP500Data[item - 84].Close > SP500Data[item].Close) {
+                            month3++;
+                            month3change += parseFloat(parseFloat(SP500Data[item - 84].Close) / parseFloat(SP500Data[item].Close)) - 1;
+                        };
+                        if ((item - 168) >= 0 && SP500Data[item - 168].Close > SP500Data[item].Close) {
+                            month6++;
+                            month6change += parseFloat(parseFloat(SP500Data[item - 168].Close) / parseFloat(SP500Data[item].Close)) - 1;
+                        };
+                        if ((item - 365) >= 0 && SP500Data[item - 365].Close > SP500Data[item].Close) {
+                            year1++;
+                            year1change += parseFloat(parseFloat(SP500Data[item - 365].Close) / parseFloat(SP500Data[item].Close)) - 1;
+                            console.log(parseFloat(parseFloat(SP500Data[item - 365].Close) / parseFloat(SP500Data[item].Close)))
+                        };
+
+                    });
+
+                    // Html stuff for statsTable
+                    const SP500Html = `
+                                <tr>
+                                    <td>${occurences}</td>
+                                    <td>${day1}</td>
+                                    <td>${week1}</td>
+                                    <td>${week2}</td>
+                                    <td>${week3}</td>
+                                    <td>${month1}</td>
+                                    <td>${month3}</td>
+                                    <td>${month6}</td>
+                                    <td>${year1}</td>
+                                </tr>
+                                <tr>
+                                    <td>Percentage:</td>
+                                    <td>${Math.round((day1/occurences * 100)).toFixed(1)}%</td>
+                                    <td>${Math.round((week1/occurences * 100)).toFixed(1)}%</td>
+                                    <td>${Math.round((week2/occurences * 100)).toFixed(1)}%</td>
+                                    <td>${Math.round((week3/occurences * 100)).toFixed(1)}%</td>
+                                    <td>${Math.round((month1/occurences * 100)).toFixed(1)}%</td>
+                                    <td>${Math.round((month3/occurences * 100)).toFixed(1)}%</td>
+                                    <td>${Math.round((month6/occurences * 100)).toFixed(1)}%</td>
+                                    <td>${Math.round((year1/occurences * 100)).toFixed(1)}%</td>
+                                </tr>
+                                <tr>
+                                    <td>Avg Gain:</td>
+                                    <td>${Math.round((day1change/day1) * 100).toFixed(1)}%</td>
+                                    <td>${Math.round((week1change/week1) * 100).toFixed(1)}%</td>
+                                    <td>${Math.round((week2change/week2) * 100).toFixed(1)}%</td>
+                                    <td>${Math.round((week3change/week3) * 100).toFixed(1)}%</td>
+                                    <td>${Math.round((month1change/month1) * 100).toFixed(1)}%</td>
+                                    <td>${Math.round((month3change/month3) * 100).toFixed(1)}%</td>
+                                    <td>${Math.round((month6change/month6) * 100).toFixed(1)}%</td>
+                                    <td>${Math.round((year1change/year1) * 100).toFixed(1)}%</td>
+                                </tr>`;
+                    /* Create display */
+                    $("#statsTable").append(SP500Html);
+
+                })
+                .catch((error) => {
+                    console.log(error);
+                });
+
+
+        }
+    </script>
+</head>
+
+
+<body>
+    <!-- Search bar 1-->
+    <div class="main-search-input-wrap">
+        <div class="main-search-input fl-wrap">
+            <div class="main-search-input-item">
+                <input id="sqlQuery" type="text" placeholder="Enter Search Query">
+            </div>
+            <button type="submit" class="main-search-button" onclick=dataQuery()>Search</button>
+        </div>
+    </div>
+
+    <!-- Filter-->
+    <p class="filter-title">Select Conditions</p>
+    <div class="advance-filter-input-wrap">
+        <form>
+            <div class="form-row">
+                <div class="col-4">
+                    <select class="custom-select mr-sm-2" id="inlineFormCustomSelect1">
+                        <option value="" selected>1st Condition</option>
+                        <option value="> 1.5">More than 1.5%</option>
+                        <option value="> 1">More than 1%</option>
+                        <option value="> 0.5">More than 0.5%</option>
+                        <option value="> 0">Market Positive</option>
+                        <option value="< 0">Market Negative</option>
+                        <option value="< -0.5">Less than -0.5%</option>
+                        <option value="< -1">Less than -1%</option>
+                        <option value="< -1.5">Less than -1.5%</option>
+                      </select>
+                </div>
+                <div class="col-4">
+                    <select class="custom-select mr-sm-2" id="inlineFormCustomSelect2">
+                        <option value="" selected>2nd Condition</option>
+                        <option value="1">More than 1%</option>
+                        <option value="0.5">More than 0.5%</option>
+                        <option value="-0.5">More than -0.5%</option>
+                        <option value="-1">More than -1%</option>
+                      </select>
+                </div>
+                <div class="col-4">
+                    <select class="custom-select mr-sm-2" id="inlineFormCustomSelect3">
+                        <option value="" selected>and/or</option>
+                        <option value="and">and</option>
+                        <option value="or">or</option>
+                      </select>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Results -->
+    <div class="main-stat-content-wrap">
+        <table class="table-dark">
+            <thead>
+                <tr>
+                    <th scope="col">Occurences</th>
+                    <th scope="col">Next Day Rise</th>
+                    <th scope="col">1 Week Rise</th>
+                    <th scope="col">2 Weeks</th>
+                    <th scope="col">3 Weeks</th>
+                    <th scope="col">1 Month</th>
+                    <th scope="col">3 Months</th>
+                    <th scope="col">6 Months</th>
+                    <th scope="col">1 Year</th>
+                </tr>
+            </thead>
+            <tbody id="statsTable">
+
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Results -->
+    <div class="main-search-content-wrap">
+        <table class="table-dark">
+            <thead>
+                <tr>
+                    <th scope="col">Date</th>
+                    <th scope="col">Close</th>
+                    <th scope="col">Open</th>
+                    <th scope="col">High</th>
+                    <th scope="col">Low</th>
+                    <th scope="col">Change</th>
+                    <th scope="col">Percentage</th>
+                </tr>
+            </thead>
+            <tbody id="dataTable">
+
+            </tbody>
+        </table>
+    </div>
+
+</body>
+
+</html>
