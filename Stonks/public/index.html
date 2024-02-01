@@ -176,7 +176,6 @@
                         if ((item - 365) >= 0 && SP500Data[item - 365].Close > SP500Data[item].Close) {
                             year1++;
                             year1change += parseFloat(parseFloat(SP500Data[item - 365].Close) / parseFloat(SP500Data[item].Close)) - 1;
-                            console.log(parseFloat(parseFloat(SP500Data[item - 365].Close) / parseFloat(SP500Data[item].Close)))
                         };
 
                     });
